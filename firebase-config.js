@@ -29,12 +29,24 @@
 //
 // =============================================================
 
-window.FIREBASE_CONFIG = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  databaseURL: "https://REPLACE_ME-default-rtdb.firebaseio.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCThbNxE7wv4RGNz1Ja9X3whdgkxDpSnfM",
+  authDomain: "horrible-cards-cbbca.firebaseapp.com",
+  projectId: "horrible-cards-cbbca",
+  storageBucket: "horrible-cards-cbbca.firebasestorage.app",
+  messagingSenderId: "489024099202",
+  appId: "1:489024099202:web:c2e61b5724ea89697db59b",
+  measurementId: "G-9MZ6P9TZE9"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
