@@ -33,7 +33,7 @@ npm install firebase
 /// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCThbNxE7wv4RGNz1Ja9X3whdgkxDpSnfM",
-  authDomain: "horrible-cards-cbbca.firebaseapp.com",
+  authDomain: "https://horrible-cards-cbbca-default-rtdb.firebaseio.com/",
   projectId: "horrible-cards-cbbca",
   storageBucket: "horrible-cards-cbbca.firebasestorage.app",
   messagingSenderId: "489024099202",
