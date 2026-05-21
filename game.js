@@ -737,7 +737,6 @@ function renderGameView() {
 
 function renderHand() {
   const pickCount = C.blackCard ? C.blackCard.pick : 1;
-  $('pick-count').textContent = pickCount;
 
   // If we've already submitted this round, show the locked state instead of the hand
   if (C.hasSubmitted) {
