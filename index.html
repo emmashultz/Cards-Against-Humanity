@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HORRIBLE CARDS — a party game for terrible friends</title>
+
+  <!-- Fonts: bold display + characterful body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- PeerJS for WebRTC multiplayer (no backend needed) -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+  <!-- Decorative noise + grid for atmosphere -->
+  <div class="bg-noise"></div>
+  <div class="bg-grid"></div>
+
+  <main id="app">
+
+    <!-- ============================================== -->
+    <!-- HOME VIEW                                       -->
+    <!-- ============================================== -->
+    <section id="view-home" class="view active">
+      <div class="home-wrap">
+        <div class="brand">
+          <div class="brand-tag">A party game for</div>
+          <h1 class="brand-title">HORRIBLE<br/>CARDS</h1>
+          <div class="brand-tag right">terrible friends</div>
+        </div>
+
+        <div class="card-stack-decor">
+          <div class="deco-card black-card-mini">█████</div>
+          <div class="deco-card white-card-mini">_______</div>
+          <div class="deco-card black-card-mini">█████</div>
+        </div>
+
+        <div class="home-form">
+          <label class="field-label">
+            <span>Your name</span>
+            <input type="text" id="input-name" maxlength="20" placeholder="e.g. Big Daddy Steve" autocomplete="off" />
+          </label>
+
+          <div class="btn-row">
+            <button id="btn-create" class="btn btn-primary">
+              <span class="btn-num">01</span>
+              <span class="btn-label">Create Room</span>
+            </button>
+            <button id="btn-show-join" class="btn btn-secondary">
+              <span class="btn-num">02</span>
+              <span class="btn-label">Join Room</span>
+            </button>
+          </div>
+
+          <div id="join-row" class="join-row hidden">
+            <input type="text" id="input-code" maxlength="4" placeholder="CODE" autocomplete="off" />
+            <button id="btn-join" class="btn btn-primary">JOIN →</button>
+          </div>
+
+          <div id="home-error" class="error-msg"></div>
+        </div>
+
+        <footer class="home-footer">
+          <span>Open this on your phone.</span>
+          <span>Up to 8 players. 18+ humor.</span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- LOBBY VIEW                                      -->
+    <!-- ============================================== -->
+    <section id="view-lobby" class="view">
+      <div class="lobby-wrap">
+        <div class="lobby-header">
+          <div class="lobby-tag">ROOM CODE</div>
+          <div id="room-code-display" class="room-code">----</div>
+          <div class="lobby-share">Share this code with your friends.</div>
+        </div>
+
+        <div class="lobby-settings hidden" id="lobby-settings">
+          <div class="settings-row">
+            <label>Points to win</label>
+            <div class="number-pick">
+              <button class="np-btn" data-target="points-to-win" data-delta="-1">−</button>
+              <span id="points-to-win-display">7</span>
+              <button class="np-btn" data-target="points-to-win" data-delta="1">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="players-section">
+          <div class="section-title">PLAYERS <span id="player-count">(0)</span></div>
+          <ul id="player-list" class="player-list"></ul>
+        </div>
+
+        <div class="lobby-actions">
+          <button id="btn-start" class="btn btn-primary big hidden">START GAME →</button>
+          <div id="lobby-waiting" class="lobby-waiting">Waiting for the host to start...</div>
+        </div>
+
+        <button id="btn-leave-lobby" class="btn-text">← leave</button>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- GAME VIEW                                       -->
+    <!-- ============================================== -->
+    <section id="view-game" class="view">
+      <div class="game-wrap">
+        <header class="game-header">
+          <div class="header-left">
+            <div class="header-tag">ROUND</div>
+            <div id="round-num" class="header-val">1</div>
+          </div>
+          <div class="header-center">
+            <div id="czar-info" class="czar-info">
+              <span id="czar-label">Card Czar:</span> <strong id="czar-name">—</strong>
+            </div>
+          </div>
+          <div class="header-right">
+            <button id="btn-show-scores" class="icon-btn">★</button>
+          </div>
+        </header>
+
+        <!-- Scores overlay -->
+        <div id="scores-overlay" class="overlay hidden">
+          <div class="overlay-content">
+            <h2>SCORES</h2>
+            <ul id="scores-list" class="scores-list"></ul>
+            <button class="btn btn-secondary" id="btn-close-scores">Close</button>
+          </div>
+        </div>
+
+        <!-- The big black card up top -->
+        <div class="black-card-area">
+          <div id="black-card" class="black-card">
+            <div class="card-content" id="black-card-text">Loading...</div>
+            <div class="card-footer">
+              <span class="card-brand">HORRIBLE CARDS</span>
+              <span id="pick-indicator" class="pick-indicator hidden">PICK 2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submitted answers (visible to czar after all submitted) -->
+        <div id="submissions-area" class="submissions-area hidden">
+          <div class="phase-label" id="submissions-label">SUBMISSIONS</div>
+          <div id="submissions-list" class="submissions-list"></div>
+        </div>
+
+        <!-- Player hand -->
+        <div id="hand-area" class="hand-area">
+          <div class="phase-label" id="phase-label">YOUR HAND — pick <span id="pick-count">1</span></div>
+          <div id="hand-list" class="hand-list"></div>
+          <div class="hand-footer">
+            <button id="btn-submit" class="btn btn-primary" disabled>SUBMIT</button>
+            <div id="hand-status" class="hand-status"></div>
+          </div>
+        </div>
+
+        <!-- Round end overlay -->
+        <div id="round-end" class="overlay hidden">
+          <div class="overlay-content round-end-content">
+            <div class="round-end-tag">WINNER OF THE ROUND</div>
+            <div id="round-winner-name" class="round-winner-name">—</div>
+            <div id="round-winner-card" class="round-winner-card"></div>
+            <div id="round-end-status" class="round-end-status">Next round starting...</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- GAME OVER VIEW                                  -->
+    <!-- ============================================== -->
+    <section id="view-end" class="view">
+      <div class="end-wrap">
+        <div class="end-tag">GAME OVER</div>
+        <h2>THE WINNER:</h2>
+        <div id="end-winner" class="end-winner">—</div>
+
+        <div class="end-scores">
+          <div class="section-title">FINAL SCORES</div>
+          <ul id="end-scores-list" class="scores-list"></ul>
+        </div>
+
+        <div class="end-actions">
+          <button id="btn-play-again" class="btn btn-primary big hidden">PLAY AGAIN</button>
+          <button id="btn-home" class="btn btn-secondary">HOME</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast for transient messages -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="cards.js"></script>
+  <script src="peer-net.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
